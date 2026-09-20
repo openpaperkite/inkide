@@ -4,13 +4,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.WindowPosition
 import dev.inkide.ui.components.IdeMenuBar
 import dev.inkide.ui.workbench.Workbench
+import dev.inkide.ui.IdeDimensions
 
 @Composable
 fun ApplicationScope.IdeApplication() {
@@ -18,8 +18,8 @@ fun ApplicationScope.IdeApplication() {
         onCloseRequest = ::exitApplication,
         title = "Ink IDE",
         state = WindowState(
-            width = 1200.dp,
-            height = 800.dp,
+            width = IdeDimensions.DefaultWindowWidth,
+            height = IdeDimensions.DefaultWindowHeight,
             position = WindowPosition.Aligned(
                 alignment = androidx.compose.ui.Alignment.Center,
             ),

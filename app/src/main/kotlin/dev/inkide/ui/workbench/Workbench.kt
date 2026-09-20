@@ -14,23 +14,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import dev.inkide.ui.components.EditorArea
 import dev.inkide.ui.components.HorizontalSplitter
 import dev.inkide.ui.components.ProjectPanel
 import dev.inkide.ui.components.TerminalArea
 import dev.inkide.ui.components.VerticalSplitter
+import dev.inkide.ui.IdeDimensions
 
 @Composable
 fun Workbench(
     modifier: Modifier = Modifier,
 ) {
     var projectWidth by remember {
-        mutableStateOf(240.dp)
+        mutableStateOf(IdeDimensions.ProjectPanelDefaultWidth)
     }
 
     var terminalHeight by remember {
-        mutableStateOf(220.dp)
+        mutableStateOf(IdeDimensions.TerminalDefaultHeight)
     }
 
     val density = LocalDensity.current
@@ -52,8 +52,8 @@ fun Workbench(
 
                 projectWidth = (projectWidth + deltaDp)
                     .coerceIn(
-                        minimumValue = 160.dp,
-                        maximumValue = 500.dp,
+                        minimumValue = IdeDimensions.ProjectPanelMinWidth,
+                        maximumValue = IdeDimensions.ProjectPanelMaxWidth,
                     )
             },
         )
@@ -77,8 +77,8 @@ fun Workbench(
 
                     terminalHeight = (terminalHeight - deltaDp)
                         .coerceIn(
-                            minimumValue = 100.dp,
-                            maximumValue = 500.dp,
+                            minimumValue = IdeDimensions.TerminalMinHeight,
+                            maximumValue = IdeDimensions.TerminalMaxHeight,
                         )
                 },
             )

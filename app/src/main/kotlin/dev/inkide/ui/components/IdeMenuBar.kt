@@ -13,15 +13,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.inkide.ui.InkColors
+import dev.inkide.ui.IdeDimensions
 
 @Composable
 fun IdeMenuBar(){
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(36.dp)
+            .height(IdeDimensions.MenuBarHeight)
             .background(InkColors.Graphite)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = IdeDimensions.PanelPadding),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(20.dp),
     ) {

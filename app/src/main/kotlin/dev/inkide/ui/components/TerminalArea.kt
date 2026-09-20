@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.inkide.ui.InkColors
+import dev.inkide.ui.IdeDimensions
 
 @Composable
 fun TerminalArea(
@@ -26,9 +27,9 @@ fun TerminalArea(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(34.dp)
+                .height(IdeDimensions.TerminalTabBarHeight)
                 .background(InkColors.LightGraphite)
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = IdeDimensions.PanelPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
