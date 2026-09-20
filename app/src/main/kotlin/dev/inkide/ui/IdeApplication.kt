@@ -1,14 +1,16 @@
 package dev.inkide.ui
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.window.WindowPosition
+import dev.inkide.ui.components.IdeMenuBar
+import dev.inkide.ui.workbench.Workbench
 
 @Composable
 fun ApplicationScope.IdeApplication() {
@@ -24,9 +26,16 @@ fun ApplicationScope.IdeApplication() {
         ),
     ){
         IdeTheme{
-            Box(
+            Column(
                 modifier = Modifier.fillMaxSize(),
-            )
+            ){
+                IdeMenuBar()
+                Workbench(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize(),
+                )
+            }
         }
     }
 }
