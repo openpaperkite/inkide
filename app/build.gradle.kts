@@ -19,6 +19,14 @@ dependencies {
     implementation(
         "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0"
     )
+
+    testImplementation(
+        kotlin("test")
+    )
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 compose.desktop {
