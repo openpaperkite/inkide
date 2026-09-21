@@ -2,12 +2,11 @@ package dev.inkide.core.workspace
 
 import dev.inkide.core.document.Document
 import dev.inkide.core.document.DocumentId
+import kotlinx.coroutines.flow.StateFlow
 
 interface Workspace {
 
-    val documents: List<Document>
-
-    val activeDocument: Document?
+    val state: StateFlow<WorkspaceState>
 
     fun openDocument(
         document: Document,

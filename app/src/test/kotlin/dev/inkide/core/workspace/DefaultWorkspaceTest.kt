@@ -21,7 +21,7 @@ class DefaultWorkspaceTest {
 
         assertEquals(
             document,
-            workspace.activeDocument,
+            workspace.state.value.activeDocument,
         )
     }
 
@@ -39,7 +39,7 @@ class DefaultWorkspaceTest {
 
         assertEquals(
             1,
-            workspace.documents.size,
+            workspace.state.value.documents.size,
         )
     }
 
@@ -66,7 +66,7 @@ class DefaultWorkspaceTest {
 
         assertEquals(
             first,
-            workspace.activeDocument,
+            workspace.state.value.activeDocument,
         )
     }
 
@@ -86,7 +86,34 @@ class DefaultWorkspaceTest {
         )
 
         assertNull(
-            workspace.activeDocument,
+            workspace.state.value.activeDocument,
+        )
+    }
+
+    @Test
+    fun `activating document changes active document`() {
+        val workspace = DefaultWorkspace()
+
+        val first = TextDocument(
+            id = DocumentId("first"),
+            name = "First.kt",
+        )
+
+        val second = TextDocument(
+            id = DocumentId("second"),
+            name = "Second.kt",
+        )
+
+        workspace.openDocument(first)
+        workspace.openDocument(second)
+
+        workspace.activateDocument(
+            first.id,
+        )
+
+        assertEquals(
+            first,
+            workspace.state.value.activeDocument,
         )
     }
 }

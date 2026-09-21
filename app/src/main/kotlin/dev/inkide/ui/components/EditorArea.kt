@@ -1,6 +1,7 @@
 package dev.inkide.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,56 +15,131 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.inkide.ui.InkColors
+import dev.inkide.core.document.Document
+import dev.inkide.core.document.DocumentId
+import dev.inkide.core.workspace.WorkspaceState
 import dev.inkide.ui.IdeDimensions
+import dev.inkide.ui.InkColors
 
 @Composable
 fun EditorArea(
+    state: WorkspaceState,
+    onDocumentSelected: (DocumentId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.background(InkColors.Graphite),
+        modifier = modifier
+            .background(InkColors.Graphite),
     ) {
-        Row(
+        EditorTabs(
+            documents = state.documents,
+            activeDocumentId = state.activeDocumentId,
+            onDocumentSelected = onDocumentSelected,
+        )
+
+        EditorContent(
+            document = state.activeDocument,
             modifier = Modifier
-                .fillMaxWidth()
-                .height(IdeDimensions.EditorTabBarHeight)
-                .background(InkColors.LightGraphite)
-                .padding(horizontal = IdeDimensions.PanelPadding),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Main.kt",
-                color = InkColors.Green,
-                fontSize = 14.sp,
-            )
+                .weight(1f)
+                .fillMaxWidth(),
+        )
+    }
+}
 
-            Text(
-                text = "App.kt",
-                color = InkColors.TextMuted,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(start = 24.dp),
-            )
+@Composable
+private fun EditorTabs(
+    documents: List<Document>,
+    activeDocumentId: DocumentId?,
+    onDocumentSelected: (DocumentId) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IdeDimensions.EditorTabBarHeight)
+            .background(InkColors.DarkGraphite),
+    ) {
+        documents.forEach { document ->
 
-            Text(
-                text = "README.md",
-                color = InkColors.TextMuted,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(start = 24.dp),
+            val isActive =
+                document.id == activeDocumentId
+
+            EditorTab(
+                document = document,
+                active = isActive,
+                onClick = {
+                    onDocumentSelected(
+                        document.id,
+                    )
+                },
             )
         }
+    }
+}
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(InkColors.Graphite),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "EDITOR",
-                color = InkColors.TextMuted,
-                fontSize = 18.sp,
-            )
+@Composable
+private fun EditorTab(
+    document: Document,
+    active: Boolean,
+    onClick: () -> Unit,
+) {
+    val background =
+        if (active) {
+            InkColors.Graphite
+        } else {
+            InkColors.DarkGraphite
         }
+
+    val textColor =
+        if (active) {
+            InkColors.Green
+        } else {
+            InkColors.TextMuted
+        }
+
+    Box(
+        modifier = Modifier
+            .height(IdeDimensions.EditorTabBarHeight)
+            .background(background)
+            .clickable(
+                onClick = onClick,
+            )
+            .padding(
+                horizontal = 16.dp,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = document.name,
+            color = textColor,
+            fontSize = 14.sp,
+        )
+    }
+}
+
+@Composable
+private fun EditorContent(
+    document: Document?,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .background(InkColors.Graphite)
+            .padding(24.dp),
+    ) {
+        if (document == null) {
+            Text(
+                text = "No document open",
+                color = InkColors.TextMuted,
+                fontSize = 16.sp,
+            )
+
+            return
+        }
+
+        Text(
+            text = document.content,
+            color = InkColors.TextPrimary,
+            fontSize = 15.sp,
+        )
     }
 }

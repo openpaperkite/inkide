@@ -12,6 +12,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import dev.inkide.ui.components.EditorArea
@@ -20,11 +22,16 @@ import dev.inkide.ui.components.ProjectPanel
 import dev.inkide.ui.components.TerminalArea
 import dev.inkide.ui.components.VerticalSplitter
 import dev.inkide.ui.IdeDimensions
+import dev.inkide.core.workspace.Workspace
 
 @Composable
 fun Workbench(
+    workspace: Workspace,
     modifier: Modifier = Modifier,
 ) {
+
+    val workspaceState by workspace.state.collectAsState()
+
     var projectWidth by remember {
         mutableStateOf(IdeDimensions.ProjectPanelDefaultWidth)
     }
@@ -64,6 +71,12 @@ fun Workbench(
                 .fillMaxHeight(),
         ) {
             EditorArea(
+                state = workspaceState,
+                onDocumentSelected = { documentId ->
+                    workspace.activateDocument(
+                        documentId,
+                    )
+                },
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
