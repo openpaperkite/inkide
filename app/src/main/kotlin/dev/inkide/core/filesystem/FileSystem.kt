@@ -8,6 +8,10 @@ interface FileSystem {
         path: Path,
     ): List<Path>
 
+    suspend fun readText(
+        path: Path,
+    ): String
+
     fun isDirectory(
         path: Path,
     ): Boolean

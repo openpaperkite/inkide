@@ -10,7 +10,6 @@ class LocalFileSystem : FileSystem {
     override suspend fun children(
         path: Path,
     ): List<Path> = withContext(Dispatchers.IO) {
-
         Files.list(path).use { stream ->
             stream
                 .sorted(
@@ -25,6 +24,12 @@ class LocalFileSystem : FileSystem {
                 )
                 .toList()
         }
+    }
+
+    override suspend fun readText(
+        path: Path,
+    ): String = withContext(Dispatchers.IO) {
+        Files.readString(path)
     }
 
     override fun isDirectory(

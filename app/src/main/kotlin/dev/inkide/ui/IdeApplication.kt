@@ -8,8 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
-import dev.inkide.core.document.DocumentId
-import dev.inkide.core.document.TextDocument
+import dev.inkide.core.document.FileDocumentLoader
 import dev.inkide.core.workspace.DefaultWorkspace
 import dev.inkide.core.workspace.Workspace
 import dev.inkide.ui.components.IdeMenuBar
@@ -23,12 +22,22 @@ import java.nio.file.Paths
 fun ApplicationScope.IdeApplication() {
 
     val workspace = remember {
-        createDemoWorkspace()
+        DefaultWorkspace()
+    }
+
+    val fileSystem = remember {
+        LocalFileSystem()
     }
 
     val projectService = remember {
         ProjectService(
-            fileSystem = LocalFileSystem(),
+            fileSystem = fileSystem,
+        )
+    }
+
+    val fileDocumentLoader = remember {
+        FileDocumentLoader(
+            fileSystem = fileSystem,
         )
     }
 
@@ -60,58 +69,12 @@ fun ApplicationScope.IdeApplication() {
                 Workbench(
                     workspace = workspace,
                     projectService = projectService,
+                    fileDocumentLoader = fileDocumentLoader,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxSize(),
                 )
             }
         }
-    }
-}
-
-private fun createDemoWorkspace(): Workspace {
-    return DefaultWorkspace().apply {
-
-        openDocument(
-            TextDocument(
-                id = DocumentId("main.kt"),
-                name = "Main.kt",
-                initialContent = """
-                    fun main() {
-                        println("Hello from Ink IDE")
-                    }
-                """.trimIndent(),
-            ),
-        )
-
-        openDocument(
-            TextDocument(
-                id = DocumentId("app.kt"),
-                name = "App.kt",
-                initialContent = """
-                    class App {
-                        fun start() {
-                            println("Starting application...")
-                        }
-                    }
-                """.trimIndent(),
-            ),
-        )
-
-        openDocument(
-            TextDocument(
-                id = DocumentId("readme.md"),
-                name = "README.md",
-                initialContent = """
-                    # Ink IDE
-                    
-                    A small, extensible IDE written in Kotlin.
-                """.trimIndent(),
-            ),
-        )
-
-        activateDocument(
-            DocumentId("main.kt"),
-        )
     }
 }

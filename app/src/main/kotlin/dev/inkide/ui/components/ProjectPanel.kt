@@ -23,10 +23,12 @@ import dev.inkide.core.project.ProjectNode
 import dev.inkide.core.project.ProjectState
 import dev.inkide.ui.IdeDimensions
 import dev.inkide.ui.InkColors
+import java.nio.file.Path
 
 @Composable
 fun ProjectPanel(
     state: ProjectState,
+    onFileSelected: (Path) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -78,6 +80,7 @@ fun ProjectPanel(
                     ProjectTreeNode(
                         node = state.rootNode,
                         depth = 0,
+                        onFileSelected = onFileSelected,
                     )
                 }
             }
@@ -100,6 +103,7 @@ fun ProjectPanel(
 private fun ProjectTreeNode(
     node: ProjectNode,
     depth: Int,
+    onFileSelected: (Path) -> Unit,
 ) {
     var expanded by remember(
         node.path,
@@ -112,10 +116,14 @@ private fun ProjectTreeNode(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(
-                enabled = node.isDirectory,
-            ) {
-                expanded = !expanded
+            .clickable {
+                if (node.isDirectory) {
+                    expanded = !expanded
+                } else {
+                    onFileSelected(
+                        node.path,
+                    )
+                }
             }
             .padding(
                 vertical = 3.dp,
@@ -160,6 +168,7 @@ private fun ProjectTreeNode(
             ProjectTreeNode(
                 node = child,
                 depth = depth + 1,
+                onFileSelected = onFileSelected,
             )
         }
     }
