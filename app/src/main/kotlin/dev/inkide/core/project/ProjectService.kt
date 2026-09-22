@@ -87,6 +87,7 @@ class ProjectService(
 
         private val ignoredNames =
             setOf(
+                ".ink",
                 ".git",
                 ".gradle",
                 ".idea",

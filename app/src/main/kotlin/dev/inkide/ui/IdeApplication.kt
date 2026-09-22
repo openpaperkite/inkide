@@ -13,9 +13,16 @@ import dev.inkide.core.workspace.DefaultWorkspace
 import dev.inkide.core.workspace.Workspace
 import dev.inkide.ui.components.IdeMenuBar
 import dev.inkide.ui.workbench.Workbench
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
 import dev.inkide.core.filesystem.LocalFileSystem
 import dev.inkide.core.project.ProjectService
+import dev.inkide.core.project.ProjectManager
+import dev.inkide.core.project.ProjectMetadataStore
+import dev.inkide.core.session.ApplicationSessionStore
+import dev.inkide.ui.dialogs.chooseProjectDirectory
+import dev.inkide.ui.dialogs.requestNewProject
 import java.nio.file.Paths
 
 @Composable
@@ -41,15 +48,27 @@ fun ApplicationScope.IdeApplication() {
         )
     }
 
-    LaunchedEffect(projectService) {
-        val projectPath =
-            Paths.get("")
-                .toAbsolutePath()
-                .normalize()
+    val sessionStore = remember {
+        ApplicationSessionStore()
+    }
 
-        projectService.openProject(
-            projectPath,
+    val metadataStore = remember {
+        ProjectMetadataStore()
+    }
+
+    val projectManager = remember {
+        ProjectManager(
+            projectService = projectService,
+            workspace = workspace,
+            sessionStore = sessionStore,
+            metadataStore = metadataStore,
         )
+    }
+
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(projectManager) {
+        projectManager.restoreLastProject()
     }
 
     Window(
@@ -64,7 +83,35 @@ fun ApplicationScope.IdeApplication() {
             Column(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                IdeMenuBar()
+                IdeMenuBar(
+                    onOpenProject = {
+                        val directory =
+                            chooseProjectDirectory()
+
+                        if (directory != null) {
+                            scope.launch {
+                                projectManager.openProject(
+                                    directory,
+                                )
+                            }
+                        }
+                    },
+                    onNewProject = {
+                        val request =
+                            requestNewProject()
+
+                        if (request != null) {
+                            scope.launch {
+                                projectManager.createProject(
+                                    parentDirectory =
+                                        request.parentDirectory,
+                                    projectName =
+                                        request.projectName,
+                                )
+                            }
+                        }
+                    },
+                )
 
                 Workbench(
                     workspace = workspace,

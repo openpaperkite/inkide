@@ -33,3 +33,6 @@ app/build
 
 # Logs
 *.log
+
+# Ink IDE
+.ink/

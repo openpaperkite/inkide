@@ -19,4 +19,6 @@ interface Workspace {
     fun activateDocument(
         id: DocumentId,
     )
+
+    fun closeAllDocuments()
 }

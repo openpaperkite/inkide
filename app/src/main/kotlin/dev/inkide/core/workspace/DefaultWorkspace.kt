@@ -88,4 +88,8 @@ class DefaultWorkspace : Workspace {
             activeDocumentId = id,
         )
     }
+
+    override fun closeAllDocuments() {
+        _state.value = WorkspaceState()
+    }
 }
