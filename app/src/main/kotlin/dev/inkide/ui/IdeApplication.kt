@@ -14,12 +14,33 @@ import dev.inkide.core.workspace.DefaultWorkspace
 import dev.inkide.core.workspace.Workspace
 import dev.inkide.ui.components.IdeMenuBar
 import dev.inkide.ui.workbench.Workbench
+import androidx.compose.runtime.LaunchedEffect
+import dev.inkide.core.filesystem.LocalFileSystem
+import dev.inkide.core.project.ProjectService
+import java.nio.file.Paths
 
 @Composable
 fun ApplicationScope.IdeApplication() {
 
     val workspace = remember {
         createDemoWorkspace()
+    }
+
+    val projectService = remember {
+        ProjectService(
+            fileSystem = LocalFileSystem(),
+        )
+    }
+
+    LaunchedEffect(projectService) {
+        val projectPath =
+            Paths.get("")
+                .toAbsolutePath()
+                .normalize()
+
+        projectService.openProject(
+            projectPath,
+        )
     }
 
     Window(
@@ -38,6 +59,7 @@ fun ApplicationScope.IdeApplication() {
 
                 Workbench(
                     workspace = workspace,
+                    projectService = projectService,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxSize(),

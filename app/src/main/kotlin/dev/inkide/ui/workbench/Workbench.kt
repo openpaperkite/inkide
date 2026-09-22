@@ -23,14 +23,17 @@ import dev.inkide.ui.components.TerminalArea
 import dev.inkide.ui.components.VerticalSplitter
 import dev.inkide.ui.IdeDimensions
 import dev.inkide.core.workspace.Workspace
+import dev.inkide.core.project.ProjectService
 
 @Composable
 fun Workbench(
     workspace: Workspace,
+    projectService: ProjectService,
     modifier: Modifier = Modifier,
 ) {
 
     val workspaceState by workspace.state.collectAsState()
+    val projectState by projectService.state.collectAsState()
 
     var projectWidth by remember {
         mutableStateOf(IdeDimensions.ProjectPanelDefaultWidth)
@@ -46,6 +49,7 @@ fun Workbench(
         modifier = modifier.fillMaxSize(),
     ) {
         ProjectPanel(
+            state = projectState,
             modifier = Modifier
                 .width(projectWidth)
                 .fillMaxHeight(),
