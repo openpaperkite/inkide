@@ -127,6 +127,11 @@ fun Workbench(
                         documentId,
                     )
                 },
+                onDocumentClosed = { documentId ->
+                    workspace.closeDocument(
+                        documentId,
+                    )
+                },
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),

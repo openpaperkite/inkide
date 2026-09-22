@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +27,7 @@ import dev.inkide.ui.InkColors
 fun EditorArea(
     state: WorkspaceState,
     onDocumentSelected: (DocumentId) -> Unit,
+    onDocumentClosed: (DocumentId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -35,6 +38,7 @@ fun EditorArea(
             documents = state.documents,
             activeDocumentId = state.activeDocumentId,
             onDocumentSelected = onDocumentSelected,
+            onDocumentClosed = onDocumentClosed,
         )
 
         EditorContent(
@@ -51,6 +55,7 @@ private fun EditorTabs(
     documents: List<Document>,
     activeDocumentId: DocumentId?,
     onDocumentSelected: (DocumentId) -> Unit,
+    onDocumentClosed: (DocumentId) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -67,9 +72,10 @@ private fun EditorTabs(
                 document = document,
                 active = isActive,
                 onClick = {
-                    onDocumentSelected(
-                        document.id,
-                    )
+                    onDocumentSelected(document.id)
+                },
+                onClose = {
+                    onDocumentClosed(document.id)
                 },
             )
         }
@@ -81,6 +87,7 @@ private fun EditorTab(
     document: Document,
     active: Boolean,
     onClick: () -> Unit,
+    onClose: () -> Unit,
 ) {
     val background =
         if (active) {
@@ -96,22 +103,34 @@ private fun EditorTab(
             InkColors.TextMuted
         }
 
-    Box(
+    Row(
         modifier = Modifier
             .height(IdeDimensions.EditorTabBarHeight)
             .background(background)
-            .clickable(
-                onClick = onClick,
-            )
+            .clickable(onClick = onClick)
             .padding(
-                horizontal = 16.dp,
+                start = 16.dp,
+                end = 8.dp,
             ),
-        contentAlignment = Alignment.Center,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = document.name,
             color = textColor,
             fontSize = 14.sp,
+        )
+
+        Spacer(
+            modifier = Modifier.width(10.dp),
+        )
+
+        Text(
+            text = "×",
+            color = InkColors.TextMuted,
+            fontSize = 16.sp,
+            modifier = Modifier.clickable {
+                onClose()
+            },
         )
     }
 }
