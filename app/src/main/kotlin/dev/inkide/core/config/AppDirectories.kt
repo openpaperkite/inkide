@@ -5,6 +5,16 @@ import java.nio.file.Paths
 
 object AppDirectories {
 
+    val projectsDirectory: Path
+        get() {
+            val home =
+                Paths.get(
+                    System.getProperty("user.home"),
+                )
+
+            return home.resolve("InkProjects")
+        }
+
     val configDirectory: Path
         get() {
             val osName =

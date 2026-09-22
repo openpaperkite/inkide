@@ -32,6 +32,20 @@ class LocalFileSystem : FileSystem {
         Files.readString(path)
     }
 
+    override suspend fun createFile(
+        path: Path,
+    ) = withContext(Dispatchers.IO) {
+        Files.createFile(path)
+        Unit
+    }
+
+    override suspend fun createDirectory(
+        path: Path,
+    ) = withContext(Dispatchers.IO) {
+        Files.createDirectory(path)
+        Unit
+    }
+
     override fun isDirectory(
         path: Path,
     ): Boolean {

@@ -83,6 +83,52 @@ class ProjectService(
             ?.toString() in ignoredNames
     }
 
+    suspend fun createFile(
+        parent: Path,
+        name: String,
+    ) {
+        require(name.isNotBlank()) {
+            "File name cannot be blank."
+        }
+
+        val path =
+            parent.resolve(
+                name.trim(),
+            )
+
+        fileSystem.createFile(path)
+
+        refresh()
+    }
+
+    suspend fun createDirectory(
+        parent: Path,
+        name: String,
+    ) {
+        require(name.isNotBlank()) {
+            "Directory name cannot be blank."
+        }
+
+        val path =
+            parent.resolve(
+                name.trim(),
+            )
+
+        fileSystem.createDirectory(path)
+
+        refresh()
+    }
+
+    suspend fun refresh() {
+        val rootPath =
+            _state.value.rootPath
+                ?: return
+
+        openProject(
+            rootPath,
+        )
+    }
+
     companion object {
 
         private val ignoredNames =

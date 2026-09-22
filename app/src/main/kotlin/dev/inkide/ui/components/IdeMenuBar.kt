@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import dev.inkide.ui.IdeDimensions
 import dev.inkide.ui.InkColors
 
@@ -75,7 +76,7 @@ fun IdeMenuBar(
                     },
                 ) {
                     Text(
-                        text = "New Project...",
+                        text = "New Project",
                     )
                 }
 
@@ -86,7 +87,7 @@ fun IdeMenuBar(
                     },
                 ) {
                     Text(
-                        text = "Open Project...",
+                        text = "Open Project",
                     )
                 }
             }

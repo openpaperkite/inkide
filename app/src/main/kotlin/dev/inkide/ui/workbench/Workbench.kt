@@ -68,6 +68,7 @@ fun Workbench(
 
             ProjectPanel(
                 state = projectState,
+
                 onFileSelected = { path ->
                     scope.launch {
                         val document =
@@ -78,6 +79,25 @@ fun Workbench(
                         )
                     }
                 },
+
+                onCreateFile = { parent, name ->
+                    scope.launch {
+                        projectService.createFile(
+                            parent = parent,
+                            name = name,
+                        )
+                    }
+                },
+
+                onCreateDirectory = { parent, name ->
+                    scope.launch {
+                        projectService.createDirectory(
+                            parent = parent,
+                            name = name,
+                        )
+                    }
+                },
+
                 modifier = Modifier
                     .width(projectWidth)
                     .fillMaxHeight(),

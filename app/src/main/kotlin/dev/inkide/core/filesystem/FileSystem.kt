@@ -12,6 +12,14 @@ interface FileSystem {
         path: Path,
     ): String
 
+    suspend fun createFile(
+        path: Path,
+    )
+
+    suspend fun createDirectory(
+        path: Path,
+    )
+
     fun isDirectory(
         path: Path,
     ): Boolean

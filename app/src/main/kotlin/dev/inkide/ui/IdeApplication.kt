@@ -17,10 +17,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
 import dev.inkide.core.filesystem.LocalFileSystem
+import dev.inkide.core.config.AppDirectories
 import dev.inkide.core.project.ProjectService
 import dev.inkide.core.project.ProjectManager
 import dev.inkide.core.project.ProjectMetadataStore
 import dev.inkide.core.session.ApplicationSessionStore
+import dev.inkide.core.config.AppDirectoriesInitializer
 import dev.inkide.ui.dialogs.chooseProjectDirectory
 import dev.inkide.ui.dialogs.requestNewProject
 import java.nio.file.Paths
@@ -67,7 +69,13 @@ fun ApplicationScope.IdeApplication() {
 
     val scope = rememberCoroutineScope()
 
+    val directoriesInitializer = remember {
+        AppDirectoriesInitializer()
+    }
+
     LaunchedEffect(projectManager) {
+        directoriesInitializer.initialize()
+
         projectManager.restoreLastProject()
     }
 
@@ -104,7 +112,7 @@ fun ApplicationScope.IdeApplication() {
                             scope.launch {
                                 projectManager.createProject(
                                     parentDirectory =
-                                        request.parentDirectory,
+                                        AppDirectories.projectsDirectory,
                                     projectName =
                                         request.projectName,
                                 )

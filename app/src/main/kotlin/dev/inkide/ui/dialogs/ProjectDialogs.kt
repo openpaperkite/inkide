@@ -1,5 +1,6 @@
 package dev.inkide.ui.dialogs
 
+import dev.inkide.core.config.AppDirectories
 import java.nio.file.Path
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
@@ -14,6 +15,11 @@ fun chooseProjectDirectory(): Path? {
 
             isAcceptAllFileFilterUsed =
                 false
+
+            currentDirectory =
+                AppDirectories
+                    .projectsDirectory
+                    .toFile()
         }
 
     val result =
@@ -32,34 +38,10 @@ fun chooseProjectDirectory(): Path? {
 }
 
 data class NewProjectRequest(
-    val parentDirectory: Path,
     val projectName: String,
 )
 
 fun requestNewProject(): NewProjectRequest? {
-
-    val chooser =
-        JFileChooser().apply {
-            dialogTitle =
-                "Choose Project Location"
-
-            fileSelectionMode =
-                JFileChooser.DIRECTORIES_ONLY
-
-            isAcceptAllFileFilterUsed =
-                false
-        }
-
-    val result =
-        chooser.showOpenDialog(null)
-
-    if (
-        result !=
-        JFileChooser.APPROVE_OPTION
-    ) {
-        return null
-    }
-
     val projectName =
         JOptionPane.showInputDialog(
             null,
@@ -74,10 +56,6 @@ fun requestNewProject(): NewProjectRequest? {
             ?: return null
 
     return NewProjectRequest(
-        parentDirectory =
-            chooser
-                .selectedFile
-                .toPath(),
         projectName = projectName,
     )
 }

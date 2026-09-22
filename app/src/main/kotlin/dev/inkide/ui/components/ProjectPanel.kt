@@ -2,6 +2,7 @@ package dev.inkide.ui.components
 
 import androidx.compose.foundation.HorizontalScrollbar
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -30,6 +31,8 @@ import androidx.compose.ui.unit.sp
 import dev.inkide.core.project.ProjectNode
 import dev.inkide.core.project.ProjectState
 import dev.inkide.ui.IdeDimensions
+import dev.inkide.ui.dialogs.requestFileName
+import dev.inkide.ui.dialogs.requestDirectoryName
 import dev.inkide.ui.InkColors
 import java.nio.file.Path
 
@@ -37,8 +40,21 @@ import java.nio.file.Path
 fun ProjectPanel(
     state: ProjectState,
     onFileSelected: (Path) -> Unit,
+    onCreateFile: (
+        parent: Path,
+        name: String,
+    ) -> Unit,
+    onCreateDirectory: (
+        parent: Path,
+        name: String,
+    ) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+
+    var selectedPath by remember {
+        mutableStateOf<Path?>(null)
+    }
+
     Column(
         modifier = modifier
             .background(InkColors.DarkGraphite)
@@ -51,6 +67,66 @@ fun ProjectPanel(
             color = InkColors.TextMuted,
             fontSize = 12.sp,
         )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    top = 6.dp,
+                    bottom = 6.dp,
+                ),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "+ File",
+                color = InkColors.Green,
+                modifier = Modifier.clickable {
+                    val parent =
+                        creationParent(
+                            selectedPath = selectedPath,
+                            state = state,
+                        )
+
+                    if (parent != null) {
+                        val name =
+                            requestFileName()
+
+                        if (name != null) {
+                            onCreateFile(
+                                parent,
+                                name,
+                            )
+                        }
+                    }
+                },
+                fontSize = 12.sp,
+            )
+
+            Text(
+                text = "+ Dir",
+                color = InkColors.Orange,
+                modifier = Modifier.clickable {
+                    val parent =
+                        creationParent(
+                            selectedPath = selectedPath,
+                            state = state,
+                        )
+
+                    if (parent != null) {
+                        val name =
+                            requestDirectoryName()
+
+                        if (name != null) {
+                            onCreateDirectory(
+                                parent,
+                                name,
+                            )
+                        }
+                    }
+                },
+                fontSize = 12.sp,
+            )
+        }
 
         Spacer(
             modifier = Modifier.width(1.dp),
@@ -84,13 +160,14 @@ fun ProjectPanel(
             state.rootNode != null -> {
                 ProjectTree(
                     rootNode = state.rootNode,
+                    selectedPath = selectedPath,
+                    onSelected = { path ->
+                        selectedPath = path
+                    },
                     onFileSelected = onFileSelected,
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxWidth()
-                        .padding(
-                            top = 12.dp,
-                        ),
+                        .fillMaxWidth(),
                 )
             }
 
@@ -111,55 +188,43 @@ fun ProjectPanel(
 @Composable
 private fun ProjectTree(
     rootNode: ProjectNode,
+    selectedPath: Path?,
+    onSelected: (Path) -> Unit,
     onFileSelected: (Path) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val verticalScrollState =
-        rememberScrollState()
-
-    val horizontalScrollState =
-        rememberScrollState()
+    val verticalScrollState = rememberScrollState()
+    val horizontalScrollState = rememberScrollState()
 
     Box(
         modifier = modifier,
     ) {
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(
-                    verticalScrollState,
-                )
-                .horizontalScroll(
-                    horizontalScrollState,
-                ),
+                .verticalScroll(verticalScrollState)
+                .horizontalScroll(horizontalScrollState),
         ) {
             ProjectTreeNode(
                 node = rootNode,
                 depth = 0,
+                selectedPath = selectedPath,
+                onSelected = onSelected,
                 onFileSelected = onFileSelected,
             )
         }
 
         VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(
-                verticalScrollState,
-            ),
+            adapter = rememberScrollbarAdapter(verticalScrollState),
             modifier = Modifier
-                .align(
-                    Alignment.CenterEnd,
-                )
+                .align(Alignment.CenterEnd)
                 .fillMaxHeight(),
         )
 
         HorizontalScrollbar(
-            adapter = rememberScrollbarAdapter(
-                horizontalScrollState,
-            ),
+            adapter = rememberScrollbarAdapter(horizontalScrollState),
             modifier = Modifier
-                .align(
-                    Alignment.BottomStart,
-                )
+                .align(Alignment.BottomStart)
                 .fillMaxWidth(),
         )
     }
@@ -169,6 +234,8 @@ private fun ProjectTree(
 private fun ProjectTreeNode(
     node: ProjectNode,
     depth: Int,
+    selectedPath: Path?,
+    onSelected: (Path) -> Unit,
     onFileSelected: (Path) -> Unit,
 ) {
     var expanded by remember(
@@ -182,6 +249,10 @@ private fun ProjectTreeNode(
     Row(
         modifier = Modifier
             .clickable {
+                onSelected(
+                    node.path,
+                )
+
                 if (node.isDirectory) {
                     expanded = !expanded
                 } else {
@@ -240,8 +311,66 @@ private fun ProjectTreeNode(
             ProjectTreeNode(
                 node = child,
                 depth = depth + 1,
+                selectedPath = selectedPath,
+                onSelected = onSelected,
                 onFileSelected = onFileSelected,
             )
         }
     }
+}
+
+private fun creationParent(
+    selectedPath: Path?,
+    state: ProjectState,
+): Path? {
+    val selected =
+        selectedPath
+
+    if (selected == null) {
+        return state.rootPath
+    }
+
+    val selectedNode =
+        findNode(
+            node = state.rootNode,
+            path = selected,
+        )
+
+    return when {
+        selectedNode == null ->
+            state.rootPath
+
+        selectedNode.isDirectory ->
+            selectedNode.path
+
+        else ->
+            selectedNode.path.parent
+    }
+}
+
+private fun findNode(
+    node: ProjectNode?,
+    path: Path,
+): ProjectNode? {
+    if (node == null) {
+        return null
+    }
+
+    if (node.path == path) {
+        return node
+    }
+
+    node.children.forEach { child ->
+        val result =
+            findNode(
+                node = child,
+                path = path,
+            )
+
+        if (result != null) {
+            return result
+        }
+    }
+
+    return null
 }
