@@ -20,13 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
+import dev.inkide.core.document.DocumentSaver
 import dev.inkide.ui.IdeDimensions
 import dev.inkide.ui.InkColors
 
 @Composable
 fun IdeMenuBar(
-    onOpenProject: () -> Unit,
     onNewProject: () -> Unit,
+    onOpenProject: () -> Unit,
+    onSave: () -> Unit,
 ) {
     var fileMenuExpanded by remember {
         mutableStateOf(false)
@@ -88,6 +90,17 @@ fun IdeMenuBar(
                 ) {
                     Text(
                         text = "Open Project",
+                    )
+                }
+
+                DropdownMenuItem(
+                    onClick = {
+                        fileMenuExpanded = false
+                        onSave()
+                    },
+                ) {
+                    Text(
+                        text = "Save",
                     )
                 }
             }

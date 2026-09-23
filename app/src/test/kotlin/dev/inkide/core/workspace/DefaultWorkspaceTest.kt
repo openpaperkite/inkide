@@ -5,6 +5,7 @@ import dev.inkide.core.document.TextDocument
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertNotNull
 
 class DefaultWorkspaceTest {
 
@@ -114,6 +115,65 @@ class DefaultWorkspaceTest {
         assertEquals(
             first,
             workspace.state.value.activeDocument,
+        )
+    }
+
+    @Test
+    fun `updating document content changes document`() {
+        val workspace = DefaultWorkspace()
+
+        val document = TextDocument(
+            id = DocumentId("main"),
+            name = "Main.kt",
+            initialContent = "old",
+        )
+
+        workspace.openDocument(
+            document,
+        )
+
+        workspace.updateDocumentContent(
+            id = document.id,
+            content = "new",
+        )
+
+        val activeDocument =
+            assertNotNull(
+                workspace.state.value.activeDocument,
+            )
+
+        assertEquals(
+            "new",
+            activeDocument.state.value.content,
+        )
+    }
+
+    @Test
+    fun `updating document content marks document modified`() {
+        val workspace = DefaultWorkspace()
+
+        val document = TextDocument(
+            id = DocumentId("main"),
+            name = "Main.kt",
+        )
+
+        workspace.openDocument(
+            document,
+        )
+
+        workspace.updateDocumentContent(
+            id = document.id,
+            content = "changed",
+        )
+
+        val activeDocument =
+            assertNotNull(
+                workspace.state.value.activeDocument,
+            )
+
+        assertEquals(
+            true,
+            activeDocument.state.value.isModified,
         )
     }
 }

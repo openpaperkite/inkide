@@ -25,6 +25,9 @@ import dev.inkide.ui.components.HorizontalSplitter
 import dev.inkide.ui.components.ProjectPanel
 import dev.inkide.ui.components.TerminalArea
 import dev.inkide.ui.components.VerticalSplitter
+import dev.inkide.core.document.CloseDecision
+import dev.inkide.core.document.DocumentSaver
+import dev.inkide.ui.dialogs.requestCloseDecision
 import kotlinx.coroutines.launch
 
 @Composable
@@ -32,6 +35,7 @@ fun Workbench(
     workspace: Workspace,
     projectService: ProjectService,
     fileDocumentLoader: FileDocumentLoader,
+    documentSaver: DocumentSaver,
     modifier: Modifier = Modifier,
 ) {
     val workspaceState by workspace.state.collectAsState()
@@ -128,8 +132,55 @@ fun Workbench(
                     )
                 },
                 onDocumentClosed = { documentId ->
-                    workspace.closeDocument(
-                        documentId,
+                    val document =
+                        workspace.state.value.documents
+                            .firstOrNull {
+                                it.id == documentId
+                            }
+
+                    if (document != null) {
+                        val documentState =
+                            document.state.value
+
+                        if (!documentState.isModified) {
+                            workspace.closeDocument(
+                                documentId,
+                            )
+                        } else {
+                            when (
+                                requestCloseDecision(
+                                    document,
+                                )
+                            ) {
+                                CloseDecision.SAVE -> {
+                                    scope.launch {
+                                        documentSaver.save(
+                                            document,
+                                        )
+
+                                        workspace.closeDocument(
+                                            documentId,
+                                        )
+                                    }
+                                }
+
+                                CloseDecision.DISCARD -> {
+                                    workspace.closeDocument(
+                                        documentId,
+                                    )
+                                }
+
+                                CloseDecision.CANCEL -> {
+                                    // Do nothing.
+                                }
+                            }
+                        }
+                    }
+                },
+                onDocumentContentChanged = { documentId, content ->
+                    workspace.updateDocumentContent(
+                        id = documentId,
+                        content = content,
                     )
                 },
                 modifier = Modifier

@@ -9,11 +9,11 @@ class FileDocumentLoader(
 
     suspend fun load(
         path: Path,
-    ): TextDocument {
+    ): FileDocument {
         val content =
             fileSystem.readText(path)
 
-        return TextDocument(
+        return FileDocument(
             id = DocumentId(
                 path
                     .toAbsolutePath()
@@ -22,6 +22,9 @@ class FileDocumentLoader(
                     .toString(),
             ),
             name = path.fileName.toString(),
+            path = path
+                .toAbsolutePath()
+                .normalize(),
             initialContent = content,
         )
     }

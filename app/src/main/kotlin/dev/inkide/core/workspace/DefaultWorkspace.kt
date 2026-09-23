@@ -2,6 +2,7 @@ package dev.inkide.core.workspace
 
 import dev.inkide.core.document.Document
 import dev.inkide.core.document.DocumentId
+import dev.inkide.core.document.TextDocument
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -91,5 +92,25 @@ class DefaultWorkspace : Workspace {
 
     override fun closeAllDocuments() {
         _state.value = WorkspaceState()
+    }
+
+    override fun updateDocumentContent(
+        id: DocumentId,
+        content: String,
+    ) {
+        val document =
+            _state.value.documents
+                .firstOrNull {
+                    it.id == id
+                }
+                ?: return
+
+        if (document !is TextDocument) {
+            return
+        }
+
+        document.updateContent(
+            content,
+        )
     }
 }

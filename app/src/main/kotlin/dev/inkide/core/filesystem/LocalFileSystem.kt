@@ -32,6 +32,18 @@ class LocalFileSystem : FileSystem {
         Files.readString(path)
     }
 
+    override suspend fun writeText(
+        path: Path,
+        content: String,
+    ) = withContext(Dispatchers.IO) {
+        Files.writeString(
+            path,
+            content,
+        )
+
+        Unit
+    }
+
     override suspend fun createFile(
         path: Path,
     ) = withContext(Dispatchers.IO) {

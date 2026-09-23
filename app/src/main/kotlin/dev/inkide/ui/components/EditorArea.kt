@@ -11,6 +11,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +34,10 @@ fun EditorArea(
     state: WorkspaceState,
     onDocumentSelected: (DocumentId) -> Unit,
     onDocumentClosed: (DocumentId) -> Unit,
+    onDocumentContentChanged: (
+        DocumentId,
+        String,
+    ) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -43,6 +53,16 @@ fun EditorArea(
 
         EditorContent(
             document = state.activeDocument,
+            onContentChanged = { content ->
+                val document =
+                    state.activeDocument
+                        ?: return@EditorContent
+
+                onDocumentContentChanged(
+                    document.id,
+                    content,
+                )
+            },
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
@@ -65,17 +85,25 @@ private fun EditorTabs(
     ) {
         documents.forEach { document ->
 
+            val documentState by
+            document.state.collectAsState()
+
             val isActive =
                 document.id == activeDocumentId
 
             EditorTab(
                 document = document,
                 active = isActive,
+                modified = documentState.isModified,
                 onClick = {
-                    onDocumentSelected(document.id)
+                    onDocumentSelected(
+                        document.id,
+                    )
                 },
                 onClose = {
-                    onDocumentClosed(document.id)
+                    onDocumentClosed(
+                        document.id,
+                    )
                 },
             )
         }
@@ -86,6 +114,7 @@ private fun EditorTabs(
 private fun EditorTab(
     document: Document,
     active: Boolean,
+    modified: Boolean,
     onClick: () -> Unit,
     onClose: () -> Unit,
 ) {
@@ -120,6 +149,18 @@ private fun EditorTab(
             fontSize = 14.sp,
         )
 
+        if (modified) {
+            Spacer(
+                modifier = Modifier.width(6.dp),
+            )
+
+            Text(
+                text = "●",
+                color = InkColors.Orange,
+                fontSize = 10.sp,
+            )
+        }
+
         Spacer(
             modifier = Modifier.width(10.dp),
         )
@@ -138,27 +179,46 @@ private fun EditorTab(
 @Composable
 private fun EditorContent(
     document: Document?,
+    onContentChanged: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier
-            .background(InkColors.Graphite)
-            .padding(24.dp),
-    ) {
-        if (document == null) {
+    if (document == null) {
+        Box(
+            modifier = modifier
+                .background(
+                    InkColors.Graphite,
+                ),
+            contentAlignment =
+                Alignment.Center,
+        ) {
             Text(
                 text = "No document open",
                 color = InkColors.TextMuted,
                 fontSize = 16.sp,
             )
-
-            return
         }
 
-        Text(
-            text = document.content,
-            color = InkColors.TextPrimary,
-            fontSize = 15.sp,
-        )
+        return
     }
+
+    val documentState by
+    document.state.collectAsState()
+
+    BasicTextField(
+        value = documentState.content,
+        onValueChange = onContentChanged,
+        modifier = modifier
+            .background(
+                InkColors.Graphite,
+            )
+            .padding(16.dp),
+        textStyle = TextStyle(
+            color = InkColors.TextPrimary,
+            fontSize = 14.sp,
+            fontFamily = FontFamily.Monospace,
+        ),
+        cursorBrush = SolidColor(
+            InkColors.Green,
+        ),
+    )
 }

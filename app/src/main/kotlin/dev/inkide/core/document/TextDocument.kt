@@ -1,29 +1,50 @@
 package dev.inkide.core.document
 
-class TextDocument(
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+open class TextDocument(
     override val id: DocumentId,
     override val name: String,
     initialContent: String = "",
 ) : Document {
 
-    override var content: String = initialContent
-        private set
+    private val _state =
+        MutableStateFlow(
+            DocumentState(
+                content = initialContent,
+                isModified = false,
+            ),
+        )
 
-    override var isModified: Boolean = false
-        private set
+    override val state: StateFlow<DocumentState> =
+        _state.asStateFlow()
 
     fun updateContent(
         newContent: String,
     ) {
-        if (content == newContent) {
+        val currentState = _state.value
+
+        if (currentState.content == newContent) {
             return
         }
 
-        content = newContent
-        isModified = true
+        _state.value = currentState.copy(
+            content = newContent,
+            isModified = true,
+        )
     }
 
     fun markSaved() {
-        isModified = false
+        val currentState = _state.value
+
+        if (!currentState.isModified) {
+            return
+        }
+
+        _state.value = currentState.copy(
+            isModified = false,
+        )
     }
 }

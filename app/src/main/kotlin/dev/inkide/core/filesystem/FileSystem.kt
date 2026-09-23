@@ -12,6 +12,11 @@ interface FileSystem {
         path: Path,
     ): String
 
+    suspend fun writeText(
+        path: Path,
+        content: String,
+    )
+
     suspend fun createFile(
         path: Path,
     )

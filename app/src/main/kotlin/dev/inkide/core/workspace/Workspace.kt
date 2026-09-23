@@ -21,4 +21,9 @@ interface Workspace {
     )
 
     fun closeAllDocuments()
+
+    fun updateDocumentContent(
+        id: DocumentId,
+        content: String,
+    )
 }

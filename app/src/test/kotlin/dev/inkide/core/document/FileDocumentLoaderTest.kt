@@ -45,11 +45,11 @@ class FileDocumentLoaderTest {
 
                 assertEquals(
                     "fun main() {}",
-                    document.content,
+                    document.state.value.content,
                 )
 
                 assertFalse(
-                    document.isModified,
+                    document.state.value.isModified,
                 )
 
                 assertTrue(

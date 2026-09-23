@@ -17,6 +17,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
 import dev.inkide.core.filesystem.LocalFileSystem
+import dev.inkide.core.document.DocumentSaver
 import dev.inkide.core.config.AppDirectories
 import dev.inkide.core.project.ProjectService
 import dev.inkide.core.project.ProjectManager
@@ -30,12 +31,12 @@ import java.nio.file.Paths
 @Composable
 fun ApplicationScope.IdeApplication() {
 
-    val workspace = remember {
-        DefaultWorkspace()
-    }
-
     val fileSystem = remember {
         LocalFileSystem()
+    }
+
+    val workspace = remember {
+        DefaultWorkspace()
     }
 
     val projectService = remember {
@@ -46,6 +47,12 @@ fun ApplicationScope.IdeApplication() {
 
     val fileDocumentLoader = remember {
         FileDocumentLoader(
+            fileSystem = fileSystem,
+        )
+    }
+
+    val documentSaver = remember {
+        DocumentSaver(
             fileSystem = fileSystem,
         )
     }
@@ -119,12 +126,27 @@ fun ApplicationScope.IdeApplication() {
                             }
                         }
                     },
+
+                    onSave = {
+                        val document =
+                            workspace.state.value
+                                .activeDocument
+
+                        if (document != null) {
+                            scope.launch {
+                                documentSaver.save(
+                                    document,
+                                )
+                            }
+                        }
+                    },
                 )
 
                 Workbench(
                     workspace = workspace,
                     projectService = projectService,
                     fileDocumentLoader = fileDocumentLoader,
+                    documentSaver = documentSaver,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxSize(),

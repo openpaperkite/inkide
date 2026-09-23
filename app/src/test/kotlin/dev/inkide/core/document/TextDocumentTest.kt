@@ -16,7 +16,7 @@ class TextDocumentTest {
         )
 
         assertFalse(
-            document.isModified,
+            document.state.value.isModified,
         )
     }
 
@@ -32,7 +32,7 @@ class TextDocumentTest {
         )
 
         assertTrue(
-            document.isModified,
+            document.state.value.isModified,
         )
     }
 
@@ -50,7 +50,7 @@ class TextDocumentTest {
         document.markSaved()
 
         assertFalse(
-            document.isModified,
+            document.state.value.isModified,
         )
     }
 
@@ -67,12 +67,29 @@ class TextDocumentTest {
         )
 
         assertFalse(
-            document.isModified,
+            document.state.value.isModified,
         )
 
         assertEquals(
             "hello",
-            document.content,
+            document.state.value.content,
+        )
+    }
+
+    @Test
+    fun `editing marks document modified`() {
+        val document = TextDocument(
+            id = DocumentId("main"),
+            name = "Main.kt",
+            initialContent = "hello",
+        )
+
+        document.updateContent(
+            "hello world",
+        )
+
+        assertTrue(
+            document.state.value.isModified,
         )
     }
 }
