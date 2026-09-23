@@ -7,12 +7,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.HorizontalScrollbar
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
@@ -185,11 +194,8 @@ private fun EditorContent(
     if (document == null) {
         Box(
             modifier = modifier
-                .background(
-                    InkColors.Graphite,
-                ),
-            contentAlignment =
-                Alignment.Center,
+                .background(InkColors.Graphite),
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = "No document open",
@@ -204,21 +210,55 @@ private fun EditorContent(
     val documentState by
     document.state.collectAsState()
 
-    BasicTextField(
-        value = documentState.content,
-        onValueChange = onContentChanged,
+    val verticalScrollState =
+        rememberScrollState()
+
+    val horizontalScrollState =
+        rememberScrollState()
+
+    Box(
         modifier = modifier
-            .background(
-                InkColors.Graphite,
-            )
-            .padding(16.dp),
-        textStyle = TextStyle(
-            color = InkColors.TextPrimary,
-            fontSize = 14.sp,
-            fontFamily = FontFamily.Monospace,
-        ),
-        cursorBrush = SolidColor(
-            InkColors.Green,
-        ),
-    )
+            .background(InkColors.Graphite),
+    ) {
+        BasicTextField(
+            value = documentState.content,
+            onValueChange = onContentChanged,
+            singleLine = false,
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(
+                    verticalScrollState,
+                )
+                .horizontalScroll(
+                    horizontalScrollState,
+                )
+                .padding(16.dp),
+            textStyle = TextStyle(
+                color = InkColors.TextPrimary,
+                fontSize = 14.sp,
+                fontFamily = FontFamily.Monospace,
+            ),
+            cursorBrush = SolidColor(
+                InkColors.Green,
+            ),
+        )
+
+        VerticalScrollbar(
+            adapter = rememberScrollbarAdapter(
+                verticalScrollState,
+            ),
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight(),
+        )
+
+        HorizontalScrollbar(
+            adapter = rememberScrollbarAdapter(
+                horizontalScrollState,
+            ),
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth(),
+        )
+    }
 }
