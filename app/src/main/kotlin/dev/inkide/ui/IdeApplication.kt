@@ -3,30 +3,31 @@ package dev.inkide.ui
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
-import dev.inkide.core.document.FileDocumentLoader
-import dev.inkide.core.workspace.DefaultWorkspace
-import dev.inkide.core.workspace.Workspace
-import dev.inkide.ui.components.IdeMenuBar
-import dev.inkide.ui.workbench.Workbench
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.LaunchedEffect
-import dev.inkide.core.filesystem.LocalFileSystem
-import dev.inkide.core.document.DocumentSaver
+import dev.inkide.core.command.*
 import dev.inkide.core.config.AppDirectories
-import dev.inkide.core.project.ProjectService
+import dev.inkide.core.config.AppDirectoriesInitializer
+import dev.inkide.core.document.DocumentSaver
+import dev.inkide.core.document.FileDocumentLoader
+import dev.inkide.core.filesystem.LocalFileSystem
 import dev.inkide.core.project.ProjectManager
 import dev.inkide.core.project.ProjectMetadataStore
+import dev.inkide.core.project.ProjectService
 import dev.inkide.core.session.ApplicationSessionStore
-import dev.inkide.core.config.AppDirectoriesInitializer
+import dev.inkide.core.workspace.DefaultWorkspace
+import dev.inkide.ui.components.IdeMenuBar
 import dev.inkide.ui.dialogs.chooseProjectDirectory
 import dev.inkide.ui.dialogs.requestNewProject
-import java.nio.file.Paths
+import dev.inkide.ui.workbench.Workbench
+import kotlinx.coroutines.launch
 
 @Composable
 fun ApplicationScope.IdeApplication() {
@@ -80,10 +81,57 @@ fun ApplicationScope.IdeApplication() {
         AppDirectoriesInitializer()
     }
 
+    val commandRegistry = remember {
+        CommandRegistry()
+    }
+
+    val keybindingRegistry =
+        remember {
+            KeybindingRegistry(
+                commandRegistry = commandRegistry,
+            )
+        }
+
+    // [ BEGIN OF KEY EVENTS]
+    keybindingRegistry.register(
+        Keybinding(
+            key = Key.S,
+            meta = true,
+            commandId =
+                BuiltinCommands.Save,
+        ),
+    )
+    // [ END OF KEY EVENTS ]
+
     LaunchedEffect(projectManager) {
         directoriesInitializer.initialize()
 
         projectManager.restoreLastProject()
+    }
+
+    LaunchedEffect(
+        commandRegistry,
+        workspace,
+        documentSaver,
+    ) {
+        commandRegistry.register(
+            Command(
+                id = BuiltinCommands.Save,
+                label = "Save",
+                execute = {
+                    val document =
+                        workspace.state.value
+                            .activeDocument
+                            ?: return@Command
+
+                    scope.launch {
+                        documentSaver.save(
+                            document,
+                        )
+                    }
+                },
+            ),
+        )
     }
 
     Window(
@@ -96,7 +144,13 @@ fun ApplicationScope.IdeApplication() {
     ) {
         IdeTheme {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onPreviewKeyEvent { event ->
+                        keybindingRegistry.handle(
+                            event,
+                        )
+                    },
             ) {
                 IdeMenuBar(
                     onOpenProject = {
@@ -128,17 +182,9 @@ fun ApplicationScope.IdeApplication() {
                     },
 
                     onSave = {
-                        val document =
-                            workspace.state.value
-                                .activeDocument
-
-                        if (document != null) {
-                            scope.launch {
-                                documentSaver.save(
-                                    document,
-                                )
-                            }
-                        }
+                        commandRegistry.execute(
+                            BuiltinCommands.Save,
+                        )
                     },
                 )
 
